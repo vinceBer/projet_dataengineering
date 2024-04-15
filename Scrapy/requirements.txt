@@ -1,0 +1,4 @@
+Scrapy == 2.11.0
+Twisted ==22.8.0
+pandas==2.1.4
+pymongo==4.6.1

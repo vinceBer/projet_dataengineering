@@ -1,0 +1,47 @@
+version: '3'
+
+# on utilise l'image oficielle de MongoDB
+# le contenuer s'appelle mongo
+# on nomme les les variables d'environnement pour le répertoire de données 'MONGO_DATA_DIR' 
+# et le réperoire de logs 'MONGO_LOG_DIR'
+# on expose le port du conteneur 27017 du conteneur vers le port 20717 de l'hote
+services:
+  mongo:
+    image: mongo
+    container_name: mongo
+    environment:
+      - MONGO_DATA_DIR=/data/db
+      - MONGO_LOG_DIR=/dev/null
+    volumes:
+      - ./data/mongo:/data/db
+    ports:
+        - 27017:27017
+
+# on construit l'image du conteneur en utilisant le contexte du dossier './Scrapy'
+# on appelle le conteneur 'crawler'
+# Ce service dépend du contenur mongo donc le service mongo doit être lancé avant le service scrapy
+# on définit une variable d'environnement qui est MONGO_URI, qui contient l'URL de connextion à la base de donnes mongo
+  scrapy:
+    build:
+      context: ./Scrapy
+    container_name: crawler 
+    depends_on:
+      - mongo
+    environment:
+      MONGO_URI: "mongodb://mongodb:27017/"
+
+# on construit l'image du conteneur en utilisant le "contexte" donné dans par le dossier './Api'
+# le contenur, l'on l'appelle app
+# on expose le port 5000 du conteneur vers le port 5000 de l'hote
+# encore une fois, le service dépend de mongo (car on fait des requetes sur cette base de données)
+# on définit égalemnt 'MONGO_URI' qui contient l'URL de connexion à la base de données mongo
+  api:
+    build:
+      context: ./Api
+    container_name: app
+    ports:
+      - "5000:5000"  
+    depends_on:
+      - mongo
+    environment:
+      MONGO_URI: "mongodb://mongodb:27017/"
